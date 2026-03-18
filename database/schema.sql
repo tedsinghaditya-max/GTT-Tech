@@ -1,0 +1,51 @@
+CREATE DATABASE fleet_management;
+
+\c fleet_management;
+
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(180) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role VARCHAR(50) NOT NULL DEFAULT 'manager',
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS drivers (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  license_number VARCHAR(80) UNIQUE NOT NULL,
+  experience_years INTEGER NOT NULL DEFAULT 0,
+  status VARCHAR(30) NOT NULL DEFAULT 'Available',
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS buses (
+  id SERIAL PRIMARY KEY,
+  bus_number VARCHAR(40) UNIQUE NOT NULL,
+  model VARCHAR(120) NOT NULL,
+  year INTEGER NOT NULL CHECK (year >= 1980 AND year <= 2100),
+  assigned_driver VARCHAR(120),
+  project VARCHAR(120) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS diesel_logs (
+  id SERIAL PRIMARY KEY,
+  bus_id INTEGER NOT NULL REFERENCES buses(id) ON DELETE CASCADE,
+  litres NUMERIC(10, 2) NOT NULL,
+  price NUMERIC(12, 2) NOT NULL,
+  odometer_reading NUMERIC(12, 2) NOT NULL,
+  entry_date DATE NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS expenses (
+  id SERIAL PRIMARY KEY,
+  bus_id INTEGER NOT NULL REFERENCES buses(id) ON DELETE CASCADE,
+  type VARCHAR(30) NOT NULL CHECK (type IN ('maintenance', 'tyre', 'oil')),
+  amount NUMERIC(12, 2) NOT NULL,
+  expense_date DATE NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
